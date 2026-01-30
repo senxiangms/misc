@@ -44,6 +44,32 @@ parser.add_argument(
     help='Paths to the log files',
     default=['provider0.log', 'provider1.log', 'provider2.log'],
 )
+parser.add_argument(
+    '--metric',
+    help='Metric to plot',
+    default='time',
+)
+parser.add_argument(
+    '--output_file',
+    help='Output file name',
+    default='time_distribution.png',
+)
+parser.add_argument(
+    '--x_label',
+    help='X label',
+    default='Percentile',
+)
+parser.add_argument(
+    '--y_label',
+    help='Y label',
+    default='Time (ms)',
+)
+parser.add_argument(
+    '--title',
+    help='Title',
+    default='Time distribution',
+)
+
 args = parser.parse_args()
 
 log_files = args.log_files
@@ -57,19 +83,20 @@ for log_file in log_files:
         metrics['time'].append(metric['time'])
         metrics['otok_sec'].append(metric['otok_sec'])
         metrics['otok_rtsec'].append(metric['otok_rtsec'])
-    all_providers_metrics[log_file] = metrics
+    log_file_name = log_file.split('/')[-1].split('.')[0]
+    all_providers_metrics[log_file_name] = metrics
 
 # plot all provider's time metric in same plot, x axis is percentile, y axis is time in milliseconds
 for provider_name, metrics in all_providers_metrics.items():
     time_values = [np.percentile(metrics['time'], p) for p in range(0, 101, 5)]
     plt.plot([p for p in range(0, 101, 5)], time_values, label=provider_name)
     
-plt.xlabel('Percentile')
-plt.ylabel('Time (ms)')
-plt.title('Time distribution')
+plt.xlabel(args.x_label)
+plt.ylabel(args.y_label)
+plt.title(args.title)
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
 plt.show()
-plt.savefig(f'time_distribution_{provider_name}.png')
+plt.savefig(args.output_file)
 
