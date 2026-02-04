@@ -29,10 +29,10 @@ async def main(args, prompt_template):
     with open(args.input_file, "r") as f:
         data = json.load(f)
     batch_prompts = []
-    batch_size = 4
+    batch_size = args.batch_size
     buffered_responses = []
     while len(data) % batch_size != 0:
-        data.append({"index": len(data), "query": "dummy, ignore me! "})
+        data.append({"index": len(data), "query": "dummy, !ignore me! "})
     for item in data:
         index = item["index"]
         if index < args.resume_index:
@@ -56,7 +56,7 @@ async def main(args, prompt_template):
                 print(f"index: {prompt_dict['index']}, query: {prompt_dict['query']}, Response: {response.choices[0].message.content}")
                 buffered_responses.append({"index": prompt_dict["index"], "query": prompt_dict["query"], "response": response.choices[0].message.content})
                 
-                if len(buffered_responses)  == 1000:
+                if len(buffered_responses)  == args.buffered_size:
                     print(f"Saving buffered {len(buffered_responses)} responses to file...")
                     with open(args.output_prefix + f"_{buffered_responses[0]['index']}_{buffered_responses[-1]['index']}.json", "w") as f:
                         json.dump(buffered_responses, f, indent=4)
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     parser.add_argument("--prompt_var", type=str, required=True)
     parser.add_argument("--max_tokens", type=int, required=False, default=20)
     parser.add_argument("--resume_index", type=int, required=False, default=0)
+    parser.add_argument("--batch_size", type=int, required=False, default=4)
+    parser.add_argument("--buffered_size", type=int, required=False, default=1000)
     args = parser.parse_args()
     prompt_module = importlib.import_module(args.prompt_module)
     prompt_template = getattr(prompt_module, args.prompt_var)
