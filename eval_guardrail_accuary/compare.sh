@@ -1,0 +1,1 @@
+python3 compare_llms.py --truth ../data/guardrail_seed_data_gpt5_responses.json --treatment ../data/qw3-4b-guardrail_0_999.json --trt_key content_status --trt_val_map safe:0,unsafe:1 --truth_key gpt5_status
